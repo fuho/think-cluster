@@ -1,0 +1,14 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jenkins-ingress
+spec:
+  rules:
+  - host: jenkins.qube.zone
+    http:
+      paths:
+      - path:
+        backend:
+          serviceName: jenkins
+          servicePort: 80

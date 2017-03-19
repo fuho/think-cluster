@@ -1,0 +1,99 @@
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: artifactory.persistent
+  namespace: default
+  labels:
+    app: artifactory
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: 10.10.10.20
+    path: "/volume1/k8s"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: artifactory.persistent
+  namespace: default
+  labels:
+    app: artifactory
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: artifactory
+  namespace: default
+  labels:
+    app: artifactory
+spec:
+  revisionHistoryLimit: 3
+  replicas: 1
+  template:
+    metadata:
+      name: artifactory
+      labels:
+        app: artifactory
+    spec:
+      containers:
+      - name: artifactory
+        image: docker.bintray.io/jfrog/artifactory-oss:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+        resources:
+          requests:
+            cpu: 0.2
+            memory: 512Mi
+        volumeMounts:
+        - mountPath: /artifactory/data
+          name: datadir
+      volumes:
+      - name: datadir
+        persistentVolumeClaim:
+          claimName: artifactory.persistent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: artifactory
+  namespace: default
+  labels:
+    app: artifactory
+spec:
+  selector:
+    app: artifactory
+  ports:
+    - port: 80
+      targetPort: 8080
+      name: http-port
+      protocol: TCP
+  selector:
+    name: artifactory
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: artifactory
+  labels:
+    app: artifactory
+spec:
+  rules:
+  - host: artifactory.qube.zone
+    http:
+      paths:
+      - path:
+        backend:
+          serviceName: artifactory
+          servicePort: 80
