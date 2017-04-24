@@ -1,0 +1,14 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: activemq-ingress
+spec:
+  rules:
+  - host: activemq.qube.zone
+    http:
+      paths:
+      - path:
+        backend:
+          serviceName: activemq
+          servicePort: 80

@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name : activemq
+  labels:
+    name: activemq
+spec: 
+  ports: 
+  - port: 8161	
+    targetPort: 8161
+    name: eightonesixone
+  - port: 61616
+    targetPort: 61616
+    name: sixonesixonesix
+  - port: 61613
+    targetPort: 61613
+    name: sixonesixonethree
+  selector:
+    app: activemq
